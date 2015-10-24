@@ -10,8 +10,8 @@ but any hard enough accel past the limit+overlean makes the chair also slide
 // TODO: do we lean and chair follows or is body and chair one?
 
 // TODO check canvas for this 
-var CANVAS_WIDTH = 640;
-var CANVAS_HEIGHT = 1000;
+var CANVAS_WIDTH = 720;
+var CANVAS_HEIGHT = 830;
 
 var groundHeight = 0;
 // probably could just make the cracks and gaps another object
