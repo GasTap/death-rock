@@ -14,7 +14,7 @@ var bg; //The background graphic
 //[Title View]
  
 
-var main; //The Main Background
+var title; //The title Background
 
 //[Game View]
 
@@ -64,7 +64,7 @@ function Main()
 
   	manifest = [
 				{src:"sky.png", id:"bg"},
-				{src:"main.png", id:"main"},
+				{src:"title.png", id:"title"},
 				{src:"startB.png", id:"startB"},
 				{src:"player.png", id:"player"},
 				{src:"ball.png", id:"ball"},
@@ -136,26 +136,20 @@ function handleFileLoad(event) {
 function addTitleView()
 {
 	//console.log("Add Title View");
-	startB.x = 240 - 31.5;
-	startB.y = 160;
+	startB.x = 360 - 31.5;
+	startB.y = 415;
 	startB.name = 'startB';
 	
-	TitleView.addChild(main, startB);
+	title.x = 360 - 139.5;
+	title.y = 200;
+	
+	TitleView.addChild(title, startB);
 	stage.addChild(bg, TitleView);
 	stage.update();
 	
 	// Button Listeners
-	
-	startB.onPress = tweenTitleView;
-}
+	startB.onPress = addGameView;
 
-// Tween Title View
-
-function tweenTitleView()
-{		
-	// Start Game
-		
-	Tween.get(TitleView).to({y:-320}, 300).call(addGameView);
 }
 
 // Add Game View
