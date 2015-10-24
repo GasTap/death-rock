@@ -163,8 +163,8 @@ function addGameView()
 	
 	// Add Game View
 	
-	player.x = 2;
-	player.y = 160 - 37.5;
+	player.x = 360 - 63.5;
+	player.y = 640;
 	ball.x = 240 - 15;
 	ball.y = 160 - 15;
 	
@@ -197,7 +197,7 @@ function startGame(e)
 function movePaddle(e)
 {
 	// Mouse Movement
-	player.y = e.stageY;
+	player.x = e.stageX;
 }
 
 
@@ -208,7 +208,7 @@ function reset()
 {
 	ball.x = 240 - 15;
 	ball.y = 160 - 15;
-	player.y = 160 - 37.5;
+	player.y = 640;
 	
 	stage.onMouseMove = null;
 	Ticker.removeListener(tkr);
@@ -247,11 +247,11 @@ function update()
 		SoundJS.play('hit');
 	}
 	
-	/* Stop Paddle from going out of canvas */
+	/* Stop Player from going out of canvas (NOT REALLY ANYMORE)*/
 	
-	if(player.y >= 249)
+	if(player.y >= 640)
 	{
-		player.y = 249;
+		player.y = 640;
 	}
 	
 	/* Check for Win */
