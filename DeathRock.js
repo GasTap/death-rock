@@ -1,64 +1,57 @@
 // SIT DOWN AND LEAN PREFERABLY ON YOUR CHAIR: DEATH ROCKIN STRAIGHT TO YOUR THEMATIC CONCLUSION OF NOT LIVING
 
-var canvas, stage; 
+var stage, w, h, loader;
+// graphics
+var player, title, sky;
 
-var w, h;
-var groundHeight;
-
-// to load graphics assets
-var img_player, img_sky, img_title;
-
-var player;
 
 function init() {
     stage = new createjs.Stage("DeathRockStage");
-    stage.mouseEventsEnabled = true;
     w = stage.canvas.width;
     h = stage.canvas.height;
     
-    // test circle
-    var circle = new createjs.Shape();
-    circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 10);
-    circle.x = 100;
-    circle.y = 100;
-    stage.addChild(circle);
-    stage.update();
-    
     // images
     manifest = [
-        {src:'player.png', id:'img_player'},
-        {src:'sky.png', id:'img_sky'},
-        {src:'title.png', id:'img_title'}
+        {src:"player.png", id:"player"},
+        {src:"sky.png", id:"sky"},
+        {src:"title.png", id:"title"}
     ];
+    
     loader = new createjs.LoadQueue(false);
     loader.addEventListener("complete", handleComplete);
-    loader.loadManifest(manifest, true, ".");
-    
+    loader.loadManifest(manifest, true, "");
     RockChair.testergh();
-    
-    // ticker does timestep
-    Ticker.setFPS(60);
-    Ticker.addEventListener("tick", tick);
-    
 }
 
 function handleComplete(){
-    img_player = new Shape();
-    img_player.graphics.beginBitmapFill(loader.getResult("img_player")).drawRect(0,0,200,200);
-    stage.addChild(img_player);
+    sky = new createjs.Shape();
+    sky.graphics.beginBitmapFill(loader.getResult("sky")).drawRect(0,0,w,h);
     
-    var test = loader.getResult("img_player");
+    //EventDispatcher.initialize(RockChair)
+    // stage.addEventListener();
+    
     player = new createjs.Shape();
-    player.graphics.beginBitmapFill(test).drawRect(0,0,w+100, h+100);
+    player.graphics.beginBitmapFill(loader.getResult("player")).drawRect(0,0,127,137);
+    player.regX = 127/2;
+    player.regY = 137/2;
+    player.x = 200;
+    player.y = 200;
+    stage.addChild(sky, player);
     
-    
-    stage.update();
+    createjs.Ticker.setFPS(60);
+    //createjs.Ticker.timingMode = createjs.Ticker.RAF;
+    createjs.Ticker.addEventListener("tick", tick);
+}
+
+function tick(event) {
+    sky.y -= 0.1;
+    player.rotation+= 5;
+    stage.update(event);
 }
 
 // original thing which you dodge
-var Projectile = (function () {
-
-})()
+function Projectile(){
+}
 
 // life throws things at you. err its the Projectile spawner
 var Life = (function () {
@@ -88,12 +81,21 @@ var Life = (function () {
     
     how do i draw and rotate ffffffffffff
 */
-var RockChair = (function () {
-    
+
+function testergh(){
+            
+        var circle = new createjs.Shape();
+        circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 100);
+        circle.x = 10;
+        circle.y = 10;
+        stage.addChild(circle);
+        stage.update();
+    }
+var RockChair = function(){    
     // positive velocity goes right of course
     var START_X = stage.canvas.width / 2;
     var START_Y = stage.canvas.height;
-    
+
     var lean = 0;    
     var x = START_X;
     var y = START_Y;
@@ -110,7 +112,8 @@ var RockChair = (function () {
     var FRICTION = 3;
     var OVERLEAN_MODULO = 10;
 
-    function testergh(){
+    // oh no
+    this.testergh = function(){
             
         var circle = new createjs.Shape();
         circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 100);
@@ -118,18 +121,20 @@ var RockChair = (function () {
         circle.y = 10;
         stage.addChild(circle);
         stage.update();
-    }
+    };
 
-    function act_left(){
+    // set mode when you hear input
+    this.act_left = function(){
         dx = -10;
         spin = -10;     
-    }
-    function act_right(){
+    };
+    this.act_right = function(){
         dx = 10;
         spin = 10;
-    }
+    };
 
-    function update(){
+
+    this.update = function(){
         x += dx;
         
         //todo keep x coordinate within canvas
@@ -148,6 +153,5 @@ var RockChair = (function () {
         }
 
         // TODO rotate hitboxes, rotate character
-    }
-
-})()
+    };
+};
