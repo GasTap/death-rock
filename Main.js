@@ -48,7 +48,7 @@ var totalLoaded = 0;
 
 var gravity = 0.5;
 var maxVelocity = 20;
-var playerMoveSpeed = 2;
+var playerMoveSpeed = 4;
 
 var rockChair = (function () {
 	// base stat in degrees for now
@@ -273,20 +273,22 @@ function update() {
 
 	//spawnProjectile("adsf", Math.random() > 0.5, mouse.x, mouse.y, Math.random()*4 -2,Math.random()*4 -2)
 
+	rockChair.update();
+	var speedLeanFactor = Math.sin((rockChair.lean + 45) / 180 * Math.PI);
+	var YLeanFactor = Math.abs(Math.sin(rockChair.lean / 180 * Math.PI));
+
     // move player
     if (keys.left) {
-    	player.x -= playerMoveSpeed;
+    	player.x -= playerMoveSpeed * (1-speedLeanFactor);
     }
     if (keys.right) {
-    	player.x += playerMoveSpeed;
+    	player.x += playerMoveSpeed * speedLeanFactor;
     }
-
-    rockChair.update();
 
     updatePlayer(player);
 
     // constrain player to ground
-    player.y = stageHeight - groundElevation + Math.abs(Math.sin(rockChair.lean / 180 * Math.PI)) * -10;
+    player.y = stageHeight - groundElevation + YLeanFactor * -10;
 
     // rotate player
     player.rotation = rockChair.lean;
