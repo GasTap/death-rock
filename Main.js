@@ -276,7 +276,7 @@ function update() {
 	rockChair.update();
 	var speedLeanFactor = Math.sin((rockChair.lean + 45) / 180 * Math.PI);
 	var YLeanFactor = Math.abs(Math.sin(rockChair.lean / 180 * Math.PI));
-
+	
     // move player
     if (keys.left) {
     	player.x -= playerMoveSpeed * (1-speedLeanFactor);
