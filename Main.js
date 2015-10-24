@@ -50,6 +50,30 @@ var gravity = 0.5;
 var maxVelocity = 20;
 var playerMoveSpeed = 2;
 
+var rockChair = (function () {
+	// base stat in degrees for now
+	var LEAN_ACCEL = 0.005;
+	var LEAN_LIMIT = 20;
+	var LEAN_OVERLEAN = 10;
+
+	function toRad (deg) {
+		return deg / 180 * Math.PI;
+	}
+
+	function RockChairSystem () {
+		// changing stats
+		this.lean = LEAN_LIMIT;
+		var velocity = 0;
+
+		this.update = function () {
+			velocity += -this.lean * LEAN_ACCEL;
+			this.lean += velocity;
+		}
+	}
+
+	return new RockChairSystem();
+})();
+
 function Projectile (isGood) {
     this.vx = 0;
     this.vy = 0;
@@ -107,9 +131,7 @@ function Main()
                 {src:"sky.png", id:"bg"},
                 {src:"title.png", id:"title"},
                 {src:"startB.png", id:"startB"},
-                {src:"player.png", id:"player"},
-                {src:"win.png", id:"win"},
-                {src:"lose.png", id:"lose"}
+                {src:"player.png", id:"player"}
             ];
 
     preloader = new PreloadJS();
@@ -181,10 +203,6 @@ function addGameView()
     // Add Game View
     
     player = new Container();
-
-    var circle = new Shape();
-    circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 10);
-    player.addChild(circle);
 
     var img = new Bitmap('player.png');
     img.x = -img.image.width / 2;
@@ -263,10 +281,15 @@ function update() {
     	player.x += playerMoveSpeed;
     }
 
+    rockChair.update();
+
     updatePlayer(player);
 
     // constrain player to ground
-    player.y = stageHeight - groundElevation;
+    player.y = stageHeight - groundElevation + Math.abs(Math.sin(rockChair.lean / 180 * Math.PI)) * -10;
+
+    // rotate player
+    player.rotation = rockChair.lean;
     
     // TODO ground redraw graphics based on width and height and elevation
 
