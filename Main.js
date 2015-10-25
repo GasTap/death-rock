@@ -56,23 +56,57 @@ var playerMoveSpeed = 4;
 var rockChair = (function () {
 	// base stat in degrees for now
 	var LEAN_ACCEL = 0.005;
-	var LEAN_LIMIT = 20;
+	var LEAN_LIMIT = 30;
 	var LEAN_OVERLEAN = 10;
-
-	function toRad (deg) {
-		return deg / 180 * Math.PI;
-	}
+    
+    var LEAN = 4;
+    var OVERLEAN = 0.5;
+    var MAX_ANGLE = 16;
+    var MAX_OVERLEAN = 21;
+    var SPEED = 4;
 
 	function RockChairSystem () {
 		// changing stats
 		this.lean = LEAN_LIMIT;
-		var velocity = 0;
+        this.overlean = 0;
+		this.velocity = 0;
 
 		this.update = function () {
-			velocity += -this.lean * LEAN_ACCEL;
-			this.lean += velocity;
+            if(keys.left){
+                if(-this.lean < MAX_ANGLE){
+                    this.lean -= LEAN;
+                } else if(-this.lean < MAX_OVERLEAN){
+                    this.lean -= OVERLEAN;
+                    this.overlean -= OVERLEAN;
+                }
+                if(this.overlean > 0){
+                    this.velocity = -this.overlean * SPEED;
+                    this.overlean += this.overlean * - 0.01;
+                }
+                if(this.overlean < 0){
+                    this.overlean += this.overlean * - 0.3;
+                }
+            }
+            if(keys.right){
+                if(this.lean < MAX_ANGLE){
+                    this.lean += LEAN;
+                } else if(this.lean < MAX_OVERLEAN){
+                    this.lean += OVERLEAN;
+                    this.overlean += OVERLEAN;
+                }
+                if(this.overlean < 0){
+                    this.velocity = -this.overlean * SPEED;
+                    this.overlean += this.overlean * - 0.01;
+                }
+                if(this.overlean > 0){
+                    this.overlean += this.overlean * - 0.3;
+                }
+            }
+            this.lean += this.lean * - 0.01;
+			//velocity += -this.lean * LEAN_ACCEL;
+			//this.lean += velocity;
 		}
-
+        
 		function toRad(deg) { return deg / 180 * Math.PI; }
 
 		this.getLeftLeanSpeed = function () {
@@ -289,22 +323,25 @@ function update() {
 	//spawnProjectile("adsf", Math.random() > 0.5, mouse.x, mouse.y, Math.random()*4 -2,Math.random()*4 -2)
 
 	rockChair.update();
-	
+    
+    /*
     // move player
     if (keys.left) {
-    	player.x -= playerMoveSpeed * (rockChair.getLeftLeanSpeed());
+        player.x -= playerMoveSpeed * (rockChair.getLeftLeanSpeed());
     }
     if (keys.right) {
-    	player.x += playerMoveSpeed * (rockChair.getRightLeanSpeed());
+        player.x += playerMoveSpeed * (rockChair.getRightLeanSpeed());
     }
-
-    updatePlayer(player);
-
+    */
+    player.x += rockChair.velocity;
+    
     // constrain player to ground
     player.y = stageHeight - groundElevation + rockChair.getHeightLeanFactor() * -10;
-
+    
     // rotate player
     player.rotation = rockChair.lean;
+    
+    updatePlayer(player);
     
     // TODO ground redraw graphics based on width and height and elevation
 
@@ -323,7 +360,6 @@ function update() {
 }
 
 function updatePlayer (player) {
-
 }
 
 function updateProjectile (projectile) {
