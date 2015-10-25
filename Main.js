@@ -1,7 +1,10 @@
-// Pong Game
-// Developed by Daniel Albu
-
-/* Define Canvas */
+// TODO elevation
+// TODO interludes
+// TODO collisions
+// TODO refine player movement
+// TODO music
+// TODO sounds
+// TODO intro and outro
 
 var canvas; //Will be linked to the canvas in our index.html page
 var stage; //Is the equivalent of stage in AS3 and we'll add "children" to it
@@ -69,9 +72,6 @@ var rockChair = (function () {
 			velocity += -this.lean * LEAN_ACCEL;
 			this.lean += velocity;
 		}
-
-		//var rightSpeedLeanFactor = rockChair.lean > 0 ? Math.sin(((rockChair.lean + 45) * 3) / 180 * Math.PI) : 0;
-		//var leftSpeedLeanFactor = rockChair.lean < 0 ? Math.sin(((rockChair.lean - 45) * 3) / 180 * Math.PI) : 0;
 
 		function toRad(deg) { return deg / 180 * Math.PI; }
 
@@ -335,5 +335,7 @@ function updateProjectile (projectile) {
 	// TODO collide player
 	// TODO collide ground
 
-	// TODO out of bounds
+	if (projectile.displayObject.y > stageHeight) {
+		projectile.displayObject.destroyed = true;
+	}
 }
