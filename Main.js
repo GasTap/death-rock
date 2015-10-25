@@ -13,7 +13,15 @@ var stageWidth = 720;
 var stageHeight = 720;
 
 var mouse = {x:0,y:0};
-var keys = {left: false, right: false};
+var keys = {};
+for (var i = 0; i < 255; i ++) {
+	keys[i] = false;
+}
+
+var LEFT_KEY = 37;
+var RIGHT_KEY = 39;
+
+var mainGameObjects = [];
 
 // Graphics
 //[Background]
@@ -30,9 +38,11 @@ var title; //The title Background
 
 var player; //The player paddle graphic
 var ground; // TODO
+var TitleView = new Container();
 var projectiles = [];
 
 var groundElevation = 0;
+var elevationStep = 10;
 
 //[Score]
 
@@ -40,9 +50,9 @@ var playerScore; //The main player score
 
 // Variables
 
-var xSpeed = 5;
-var ySpeed = 5;
 var tkr = new Object;
+
+var currentInterlude = null;
 
 //preloader
 var preloader;
@@ -165,10 +175,18 @@ function spawnProjectile (text, isGood, x, y, vx, vy) {
     return proj;
 }
 
-var TitleView = new Container();
+function cleanProjectiles () {
+	var toDestroy = projectiles.filter(function (projectile) { return projectile.destroyed; });
+    toDestroy.map(function (projectile) { stage.removeChild(projectile.displayObject) });
+    // TODO destroy projectiles
+    projectiles = projectiles.filter(function (projectile) { return !projectile.destroyed; });
+}
 
-function Main()
-{
+function projectileColliding (projectile) {
+	return dist(player,projectile.displayObject) < 90;
+}
+
+function Main() {
     /* Link Canvas */
     
     canvas = document.getElementById('DeathRockStage');
@@ -261,6 +279,9 @@ function addGameView()
     player.y = stageHeight;
 
     stage.addChild(player);
+
+    ground = new Container();
+    stage.addChild(ground);
     
     // Score
     stage.update();
@@ -290,19 +311,11 @@ function onMouseMove(e) {
 }
 
 function onKeyDown (e) {
-	if (e.keyCode === 37) {
-		keys.left = true;
-	} else if (e.keyCode === 39) {
-		keys.right = true;
-	}
+	keys[e.keyCode] = true;
 }
 
 function onKeyUp (e) {
-	if (e.keyCode === 37) {
-		keys.left = false;
-	} else if (e.keyCode === 39) {
-		keys.right = false;
-	}
+	keys[e.keyCode] = false;
 }
 
 /* Reset */
@@ -317,10 +330,26 @@ function reset()
 }
 
 // Update Function
+function dist(a,b) { return Math.sqrt(Math.pow(a.x-b.x, 2) + Math.pow(a.y - b.y, 2));}
 
 function update() {
 
 	//spawnProjectile("adsf", Math.random() > 0.5, mouse.x, mouse.y, Math.random()*4 -2,Math.random()*4 -2)
+
+	// if we're in an interlude, update that instead
+	if (currentInterlude !== null) {
+		currentInterlude.update(stage);
+		return;
+	}
+
+	for (var i = 0; i < projectiles.length; i++) {
+		if (projectileColliding(projectiles[i])) {
+			groundElevation += elevationStep;
+			projectiles[i].destroyed = true;
+			cleanProjectiles();
+			//return switchToInterlude(Interlude1);
+		}
+	}
 
 	rockChair.update();
     
@@ -331,6 +360,11 @@ function update() {
     }
     if (keys.right) {
         player.x += playerMoveSpeed * (rockChair.getRightLeanSpeed());
+    if (keys[LEFT_KEY]) {
+    	player.x -= playerMoveSpeed * (rockChair.getLeftLeanSpeed());
+    }
+    if (keys[RIGHT_KEY]) {
+    	player.x += playerMoveSpeed * (rockChair.getRightLeanSpeed());
     }
     */
     player.x += rockChair.velocity;
@@ -349,10 +383,7 @@ function update() {
     projectiles.map(updateProjectile);
 
     // clean projectiles
-    var toDestroy = projectiles.filter(function (projectile) { return projectile.destroyed; });
-    toDestroy.map(function (projectile) { stage.removeChild(projectile.displayObject) });
-    // TODO destroy projectiles
-    projectiles = projectiles.filter(function (projectile) { return !projectile.destroyed; });
+    cleanProjectiles();
 
     if (Math.random() < 0.05) {
     	spawnProjectile("asdf", Math.random() > 0.8, Math.random() * stageWidth, -10, Math.random() * 4 - 2, Math.random() * 2);
@@ -374,4 +405,24 @@ function updateProjectile (projectile) {
 	if (projectile.displayObject.y > stageHeight + 20) {
 		projectile.destroyed = true;
 	}
+}
+
+function switchToInterlude (InterludeClass) {
+	// TODO save scene and load interlude
+
+	// remove player and all projectiles
+	mainGameObjects = [player, ground].concat(projectiles.map(function(projectile){ return projectile.displayObject; }));
+	mainGameObjects.forEach(function (displayObject) {
+		stage.removeChild(displayObject);
+	});
+
+	currentInterlude = new InterludeClass();
+	currentInterlude.add(stage);
+}
+
+function returnFromInterlude () {
+	mainGameObjects.forEach(function (displayObject) {
+		stage.addChild(displayObject);
+	})
+	currentInterlude = null;
 }
