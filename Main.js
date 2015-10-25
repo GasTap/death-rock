@@ -313,7 +313,7 @@ function update() {
 
     // clean projectiles
     var toDestroy = projectiles.filter(function (projectile) { return projectile.destroyed; });
-    toDestroy.map(function (projectile) { stage.removeChild(toDestroy) });
+    toDestroy.map(function (projectile) { stage.removeChild(projectile.displayObject) });
     // TODO destroy projectiles
     projectiles = projectiles.filter(function (projectile) { return !projectile.destroyed; });
 
@@ -335,7 +335,7 @@ function updateProjectile (projectile) {
 	// TODO collide player
 	// TODO collide ground
 
-	if (projectile.displayObject.y > stageHeight) {
-		projectile.displayObject.destroyed = true;
+	if (projectile.displayObject.y > stageHeight + 20) {
+		projectile.destroyed = true;
 	}
 }
