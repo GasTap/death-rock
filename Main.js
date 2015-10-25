@@ -69,6 +69,21 @@ var rockChair = (function () {
 			velocity += -this.lean * LEAN_ACCEL;
 			this.lean += velocity;
 		}
+
+		//var rightSpeedLeanFactor = rockChair.lean > 0 ? Math.sin(((rockChair.lean + 45) * 3) / 180 * Math.PI) : 0;
+		//var leftSpeedLeanFactor = rockChair.lean < 0 ? Math.sin(((rockChair.lean - 45) * 3) / 180 * Math.PI) : 0;
+
+		function toRad(deg) { return deg / 180 * Math.PI; }
+
+		this.getLeftLeanSpeed = function () {
+			return velocity < 0 ? -velocity / 2 : velocity / 4;
+		}
+		this.getRightLeanSpeed = function () {
+			return velocity > 0 ? velocity / 2 : -velocity / 4;
+		}
+		this.getHeightLeanFactor = function () {
+			return Math.abs(Math.sin(this.lean / 180 * Math.PI));
+		}
 	}
 
 	return new RockChairSystem();
@@ -274,21 +289,19 @@ function update() {
 	//spawnProjectile("adsf", Math.random() > 0.5, mouse.x, mouse.y, Math.random()*4 -2,Math.random()*4 -2)
 
 	rockChair.update();
-	var speedLeanFactor = Math.sin((rockChair.lean + 45) / 180 * Math.PI);
-	var YLeanFactor = Math.abs(Math.sin(rockChair.lean / 180 * Math.PI));
 	
     // move player
     if (keys.left) {
-    	player.x -= playerMoveSpeed * (1-speedLeanFactor);
+    	player.x -= playerMoveSpeed * (rockChair.getLeftLeanSpeed());
     }
     if (keys.right) {
-    	player.x += playerMoveSpeed * speedLeanFactor;
+    	player.x += playerMoveSpeed * (rockChair.getRightLeanSpeed());
     }
 
     updatePlayer(player);
 
     // constrain player to ground
-    player.y = stageHeight - groundElevation + YLeanFactor * -10;
+    player.y = stageHeight - groundElevation + rockChair.getHeightLeanFactor() * -10;
 
     // rotate player
     player.rotation = rockChair.lean;
