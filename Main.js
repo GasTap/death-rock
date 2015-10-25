@@ -73,7 +73,8 @@ var rockChair = (function () {
     var OVERLEAN = 0.5;
     var MAX_ANGLE = 16;
     var MAX_OVERLEAN = 21;
-    var SPEED = 4;
+    var SPEED = 10;
+    var FRICTION = 0.1;
 
 	function RockChairSystem () {
 		// changing stats
@@ -113,6 +114,12 @@ var rockChair = (function () {
                 }
             }
             this.lean += this.lean * - 0.01;
+            if (this.velocity > 0){
+                this.velocity -= FRICTION;
+            }
+            if (this.velocity < 0){
+                this.velocity += FRICTION;
+            }
 			//velocity += -this.lean * LEAN_ACCEL;
 			//this.lean += velocity;
 		}
