@@ -3,11 +3,16 @@
 	<head>
 		<title>DeathRock</title>
 		
-		<script src="https://code.createjs.com/createjs-2015.05.21.combined.js"></script>
-		<script src="DeathRock.js"></script>
-		
+		<style>/* Removes Mobile Highlight */ *{-webkit-tap-highlight-color: rgba(0, 0, 0, 0);}</style>
+
+		<script src="http://code.createjs.com/easeljs-0.4.2.min.js"></script>
+		<script src="http://code.createjs.com/tweenjs-0.2.0.min.js"></script>
+		<script src="http://code.createjs.com/preloadjs-0.1.0.min.js"></script>
+		<script src="http://code.createjs.com/movieclip-0.4.1.min.js"></script>
+		<script src="Main.js"></script>
+	
 	</head>
-	<body onload="init();">
-		<canvas id="DeathRockStage" width="720" height="830"></canvas>
+	<body onload="Main();">
+		<canvas id="DeathRockStage" width="720" height="720"></canvas>
 	</body>
 </html>
