@@ -82,7 +82,7 @@ var rockChair = (function () {
 		this.velocity = 0;
 
 		this.update = function () {
-            if(keys.left){
+            if(keys[LEFT_KEY]){
                 if(-this.lean < MAX_ANGLE){
                     this.lean -= LEAN;
                 } else if(-this.lean < MAX_OVERLEAN){
@@ -93,11 +93,11 @@ var rockChair = (function () {
                     this.velocity = -this.overlean * SPEED;
                     this.overlean += this.overlean * - 0.01;
                 }
-                if(this.overlean < 0){
+                if(this.lean < 0){
                     this.overlean += this.overlean * - 0.3;
                 }
             }
-            if(keys.right){
+            if(keys[RIGHT_KEY]){
                 if(this.lean < MAX_ANGLE){
                     this.lean += LEAN;
                 } else if(this.lean < MAX_OVERLEAN){
