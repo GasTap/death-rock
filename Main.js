@@ -6,6 +6,7 @@
 // TODO sounds
 // TODO intro and outro
 
+var debuglog = false;
 
 var canvas; //Will be linked to the canvas in our index.html page
 var stage; //Is the equivalent of stage in AS3 and we'll add "children" to it
@@ -125,6 +126,9 @@ var rockChair = (function () {
                     this.overlean -= OVERLEAN;
                 }
                 if(this.overlean > 0){
+                    if(debuglog){
+                        console.log("sliding!");
+                    }
                     this.velocity = -this.overlean * SPEED;
                     this.overlean += this.overlean * - 0.01;
                 }
@@ -140,6 +144,9 @@ var rockChair = (function () {
                     this.overlean += OVERLEAN;
                 }
                 if(this.overlean < 0){
+                    if(debuglog){
+                        console.log("sliding!");
+                    }
                     this.velocity = -this.overlean * SPEED;
                     this.overlean += this.overlean * - 0.01;
                 }
@@ -239,15 +246,21 @@ function cleanProjectiles () {
 function projectileColliding (projectile) {
 	// detect for head chest AND leg (all of them circles)
     if(dist(rockChair.head, projectile.displayObject) < rockChair.HEAD_RADIUS){
-        console.log("hit head");
+        if(debuglog){
+            console.log("hit head");
+        }
         return true;
     }
     if(dist(rockChair.chest, projectile.displayObject) < rockChair.CHEST_RADIUS){
-        console.log("hit chest");
+        if(debuglog){
+            console.log("hit chest");
+        }
         return true;
     }
     if(dist(rockChair.leg, projectile.displayObject) < rockChair.LEG_RADIUS){
-        console.log("hit leg");
+        if(debuglog){
+            console.log("hit leg");
+        }
         return true;
     }
     return false;
@@ -270,7 +283,8 @@ function Main() {
                 {src:"sky.png", id:"bg"},
                 {src:"title.png", id:"title"},
                 {src:"startB.png", id:"startB"},
-                {src:"player.png", id:"player"}
+                {src:"player.png", id:"player"},
+                {src:"ground.png", id:"ground"}
             ];
 
     preloader = new PreloadJS();
@@ -353,6 +367,12 @@ function addGameView()
     stage.addChild(player);
 
     ground = new Container();
+    var img = new Bitmap('ground.png');
+    img.x = 0;
+    img.y = -2;
+    ground.addChild(img);
+    ground.x = 0;
+    ground.y = stageHeight;
     stage.addChild(ground);
     
     // Score
@@ -451,6 +471,7 @@ function update() {
     updatePlayer(player);
     
     // TODO ground redraw graphics based on width and height and elevation
+    ground.y = stageHeight - groundElevation;
 
     // update projectiles
     projectiles.map(updateProjectile);
@@ -473,11 +494,11 @@ function updateProjectile (projectile) {
 	projectile.displayObject.y += projectile.vy;
 
 	// TODO collide player
+   /* if (projectileColliding(projectile)){
+        projectile.destroyed = true;
+    }*/
     
 	// TODO collide ground
-    if (projectileColliding(projectile)){
-        projectile.destroyed = true;
-    }
 	if (projectile.displayObject.y > stageHeight + 20) {
 		projectile.destroyed = true;
 	}
