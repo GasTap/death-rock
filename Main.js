@@ -6,6 +6,7 @@
 // TODO sounds
 // TODO intro and outro
 
+
 var canvas; //Will be linked to the canvas in our index.html page
 var stage; //Is the equivalent of stage in AS3 and we'll add "children" to it
 
@@ -59,11 +60,12 @@ var preloader;
 var manifest;
 var totalLoaded = 0;
 
-var gravity = 0.5;
+var gravity = 0.3;
 var maxVelocity = 20;
 var playerMoveSpeed = 4;
 
 var rockChair = (function () {
+
 	// base stat in degrees for now
 	var LEAN_ACCEL = 0.005;
 	var LEAN_LIMIT = 30;
@@ -73,14 +75,46 @@ var rockChair = (function () {
     var OVERLEAN = 0.5;
     var MAX_ANGLE = 16;
     var MAX_OVERLEAN = 21;
-    var SPEED = 10;
+    var SPEED = 11;
     var FRICTION = 0.1;
 
+/*
+    from ms paint lol
+    head hitbox at 58,19 radius 18
+    body hitbox at 54,62 radius 32
+    leg hitbox at 86,100 radius 22
+    also then have to adjust for rotating 
+    
+    the image itself is 127x137
+*/
+    // the following treats origen as getting 3-0'd by SKT T1 (@ 127/2 x 137)
+    var ORIGIN_X = 127/2;
+    var ORIGIN_Y = 137;
+    var HEAD_X = 58 - ORIGIN_X;
+    var HEAD_Y = 19 - ORIGIN_Y;
+    var CHEST_X = 54 - ORIGIN_X;
+    var CHEST_Y = 62 - ORIGIN_Y;
+    var LEG_X = 86 - ORIGIN_X;
+    var LEG_Y = 100 - ORIGIN_Y;
+    // math: since middle bottom is x and y of player origin
+    // we already use above vars for relative coordinates, just do rotation transform
+
 	function RockChairSystem () {
-		// changing stats
-		this.lean = LEAN_LIMIT;
+        
+        function toRad(deg) { return deg / 180 * Math.PI; }
+		
+        // changing stats
+		this.lean = 0;
         this.overlean = 0;
 		this.velocity = 0;
+        
+        // this.head,chest,leg needs to adjust for each new lean
+        this.HEAD_RADIUS = 25;
+        this.CHEST_RADIUS = 38;
+        this.LEG_RADIUS = 26;
+        this.head = new Object();
+        this.chest = new Object();
+        this.leg = new Object();
 
 		this.update = function () {
             if(keys[LEFT_KEY]){
@@ -120,12 +154,23 @@ var rockChair = (function () {
             if (this.velocity < 0){
                 this.velocity += FRICTION;
             }
+            
+            var angle = toRad(this.lean);
+            var sine = Math.sin(angle);
+            var cosine = Math.cos(angle);
+            this.head.x = player.x + (HEAD_X * cosine + HEAD_Y * -sine);
+            this.head.y = player.y + (HEAD_X * sine + HEAD_Y * cosine); 
+            this.chest.x = player.x + (CHEST_X * cosine + CHEST_Y * -sine);
+            this.chest.y = player.y + (CHEST_X * sine + CHEST_Y * cosine); 
+            this.leg.x = player.x + (LEG_X * cosine + LEG_Y * -sine);
+            this.leg.y = player.y + (LEG_X * sine + LEG_Y * cosine); 
+            
 			//velocity += -this.lean * LEAN_ACCEL;
 			//this.lean += velocity;
 		}
         
-		function toRad(deg) { return deg / 180 * Math.PI; }
 
+// depreciated for now
 		this.getLeftLeanSpeed = function () {
 			return velocity < 0 ? -velocity / 2 : velocity / 4;
 		}
@@ -189,8 +234,28 @@ function cleanProjectiles () {
     projectiles = projectiles.filter(function (projectile) { return !projectile.destroyed; });
 }
 
+
+// assuming this is for colliding with player now exclusively
 function projectileColliding (projectile) {
-	return dist(player,projectile.displayObject) < 90;
+	// detect for head chest AND leg (all of them circles)
+    if(dist(rockChair.head, projectile.displayObject) < rockChair.HEAD_RADIUS){
+        console.log("hit head");
+        return true;
+    }
+    if(dist(rockChair.chest, projectile.displayObject) < rockChair.CHEST_RADIUS){
+        console.log("hit chest");
+        return true;
+    }
+    if(dist(rockChair.leg, projectile.displayObject) < rockChair.LEG_RADIUS){
+        console.log("hit leg");
+        return true;
+    }
+    return false;
+}
+
+// dont really need
+function drawHitbox(){
+    
 }
 
 function Main() {
@@ -214,7 +279,7 @@ function Main() {
 
     /* Ticker */
     
-    Ticker.setFPS(30);
+    Ticker.setFPS(60);
     Ticker.addListener(stage);
 }
 
@@ -340,7 +405,7 @@ function reset()
 function dist(a,b) { return Math.sqrt(Math.pow(a.x-b.x, 2) + Math.pow(a.y - b.y, 2));}
 
 function update() {
-
+    //console.log(player.x);
 	//spawnProjectile("adsf", Math.random() > 0.5, mouse.x, mouse.y, Math.random()*4 -2,Math.random()*4 -2)
 
 	// if we're in an interlude, update that instead
@@ -348,7 +413,8 @@ function update() {
 		currentInterlude.update(stage);
 		return;
 	}
-
+    
+    // for every projectile handle and resolve collision
 	for (var i = 0; i < projectiles.length; i++) {
 		if (projectileColliding(projectiles[i])) {
 			groundElevation += elevationStep;
@@ -407,8 +473,11 @@ function updateProjectile (projectile) {
 	projectile.displayObject.y += projectile.vy;
 
 	// TODO collide player
+    
 	// TODO collide ground
-
+    if (projectileColliding(projectile)){
+        projectile.destroyed = true;
+    }
 	if (projectile.displayObject.y > stageHeight + 20) {
 		projectile.destroyed = true;
 	}
