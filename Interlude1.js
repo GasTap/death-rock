@@ -55,7 +55,6 @@ var Interlude2 = (function () {
             returnFromInterlude();
         }
         this.i = 0;
-        this.colour = '#'+Math.round(Math.random() * 0xFFFFFF).toString(16);
         this.posX = Math.random() * 600;
         this.posY = Math.random() * 600;
         this.update = function (stage) {
@@ -68,13 +67,20 @@ var Interlude2 = (function () {
             stage.addChild(text);
             this.displayObjects.push(text);
 
+            var colour = '#'+Math.round(Math.random() * 0xFFFFFF).toString(16);
+            var posX = Math.random() * 500;
+            var posY = Math.random() * 500;
+
             var shape = new Shape();
-            shape.graphics.beginFill(this.colour).drawCircle(0, 0, 100 - Math.cos(this.i / 300 * Math.PI / 2) * 100);
+            shape.graphics.beginFill(colour).drawCircle(0, 0, 1);
+            shape.x = posX + 100;
+            shape.y = posY + 100;
             stage.addChild(shape);
             this.displayObjects.push(shape);
 
-            shape.x = this.i * 2 + 30;
-            shape.y = 360 + Math.sin(this.i / 100) * 100;
+            for (var j = 0; j < this.displayObjects.length; j ++) {
+                this.displayObjects[j].scaleX += 0.05;
+            }
 
             if (this.i > 400) {
                 this.remove();
@@ -84,4 +90,4 @@ var Interlude2 = (function () {
     return Interlude1;
 })();
 
-var interludes = [Interlude1];
+var interludes = [Interlude1, Interlude2];
