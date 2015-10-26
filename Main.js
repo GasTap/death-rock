@@ -58,6 +58,8 @@ var bg;
 var title;
 var player;
 var ground;
+var startB;
+var title;
 var TitleView = new Container();
 var projectiles = [];
 
@@ -191,7 +193,6 @@ var rockChair = (function () {
 		}
         
 
-// depreciated for now
 		this.getLeftLeanSpeed = function () {
 			return velocity < 0 ? -velocity / 2 : velocity / 4;
 		}
@@ -317,7 +318,7 @@ function Main() {
 
     createjs.Sound.registerSound("music.mp3", "bgmusic");
     createjs.Sound.addEventListener("fileload", function () {
-    	createjs.Sound.play("bgmusic", {loop:9999999999999});
+    	handleLoadComplete();
     });
 
     preloader = new PreloadJS();
@@ -348,7 +349,7 @@ function handleFileLoad(event) {
 
     totalLoaded++;
     
-    if(manifest.length==totalLoaded)
+    if(manifest.length+1==totalLoaded)
     {
         addTitleView();
     }
@@ -357,9 +358,7 @@ function handleFileLoad(event) {
 
 // Add Title View Function
 
-function addTitleView()
-{
-    //console.log("Add Title View");
+function addTitleView() {
     startB.x = 360 - 31.5;
     startB.y = 415;
     startB.name = 'startB';
@@ -372,15 +371,12 @@ function addTitleView()
     stage.update();
     
     // Button Listeners
-    //startB.onPress = addGameView;
-    addGameView();
-
+    startB.onPress = addGameView;
 }
 
 // Add Game View
 
-function addGameView()
-{
+function addGameView() {
     // Destroy Menu
     
     stage.removeChild(TitleView);
@@ -419,6 +415,9 @@ function addGameView()
 
 // Start Game Function
 function startGame(e) {
+
+	createjs.Sound.play("bgmusic", {loop:9999999999999});
+
     bg.onPress = null;
     stage.onMouseMove = onMouseMove;
     window.document.onkeydown = onKeyDown;
