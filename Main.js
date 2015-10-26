@@ -1,8 +1,8 @@
 // TODO interludes
-// TODO projectile effects
 
 var startTime = 6000;
 
+var interludes = [];
 var badMessages = [
 	'heart attack',
 	'stroke',
@@ -54,33 +54,15 @@ var LEFT_KEY = 37;
 var RIGHT_KEY = 39;
 
 var mainGameObjects = [];
-
-// Graphics
-//[Background]
-
-var bg; //The background graphic
-
-//[Title View]
- 
-
-var title; //The title Background
-
-//[Game View]
-
-
-var player; //The player paddle graphic
-var ground; // TODO
+var bg;
+var title;
+var player;
+var ground;
 var TitleView = new Container();
 var projectiles = [];
 
 var groundElevation = 0;
 var elevationStep = 10;
-
-//[Score]
-
-var playerScore; //The main player score
-
-// Variables
 
 var tkr = new Object;
 
@@ -91,8 +73,8 @@ var preloader;
 var manifest;
 var totalLoaded = 0;
 
-var gravity = 0.3;
-var maxVelocity = 20;
+var gravity = 0.2;
+var maxVelocity = 15;
 var playerMoveSpeed = 4;
 
 var rockChair = (function () {
@@ -224,10 +206,11 @@ var rockChair = (function () {
 	return new RockChairSystem();
 })();
 
-function Projectile (isGood) {
+function Projectile (isGood, isDangerous) {
     this.vx = 0;
     this.vy = 0;
     this.isGood = isGood;
+    this.isDangerous = isDangerous;
     this.destroyed = false;
     this.displayObject = null;
 }
@@ -242,16 +225,31 @@ function spawnProjectile (text, isGood, x, y, vx, vy) {
     proj.displayObject = projGraphics;
     var circle;
     var textShape;
-    if (isGood) {
+    if (text && isGood) {
         textShape = new Text(text, 'bold 20px Arial', "DeepSkyBlue");
         projGraphics.addChild(textShape);
-    } else {
+    } else if (text && !isGood) {
         textShape = new Text(text, 'bold 20px Arial', "DarkRed");
         projGraphics.addChild(textShape);
     }
+    proj.isDangerous = text !== "";
 
-    textShape.x = -textShape.getMeasuredWidth()/2; 
-	textShape.y = textShape.getMeasuredLineHeight()/4;
+    if (!proj.isDangerous) {
+    	if (isGood) {
+    		circle = new Shape();
+            circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, Math.random() * 4);
+	        projGraphics.addChild(circle);
+	    } else if (!isGood) {
+	    	circle = new Shape();
+            circle.graphics.beginFill("DarkRed").drawCircle(0, 0, Math.random() * 4);
+	        projGraphics.addChild(circle);
+	    }	
+    }
+
+    if (textShape) {
+    	textShape.x = -textShape.getMeasuredWidth()/2; 
+		textShape.y = textShape.getMeasuredLineHeight()/4;
+	}
 
     projectiles.push(proj);
     stage.addChild(projGraphics);
@@ -261,7 +259,6 @@ function spawnProjectile (text, isGood, x, y, vx, vy) {
 function cleanProjectiles () {
 	var toDestroy = projectiles.filter(function (projectile) { return projectile.destroyed; });
     toDestroy.map(function (projectile) { stage.removeChild(projectile.displayObject) });
-    // TODO destroy projectiles
     projectiles = projectiles.filter(function (projectile) { return !projectile.destroyed; });
 }
 
@@ -298,6 +295,10 @@ function drawHitbox(){
 function Main() {
     /* Link Canvas */
     
+    interludes = [
+		Interlude1
+	];
+
     canvas = document.getElementById('DeathRockStage');
     stage = new Stage(canvas);
         
@@ -487,15 +488,17 @@ function update(timeStep) {
     
     // for every projectile handle and resolve collision
 	for (var i = 0; i < projectiles.length; i++) {
-		if (projectileColliding(projectiles[i])) {
+		if (projectiles[i].isDangerous && projectileColliding(projectiles[i])) {
 			groundElevation += projectiles[i].isGood ? -elevationStep / 2 : elevationStep;
 			projectiles[i].destroyed = true;
 			cleanProjectiles();
-			if (Math.random() > 0.8) {
+			if (Math.random() > 0.5) {
 				//groundWidth -= 5;
 				//groundWidth = Math.max(groundWidth, 200);
 			}
-			//return switchToInterlude(Interlude1);
+			if (Math.random() > 0.9) {
+				return switchToInterlude(interludes[Math.floor(Math.random() * interludes.length)]);
+			}
 		}
 	}
 
@@ -518,8 +521,6 @@ function update(timeStep) {
     
     // rotate player
     player.rotation = rockChair.lean;
-    
-    updatePlayer(player);
 
     // update projectiles
     projectiles.map(updateProjectile);
@@ -540,15 +541,21 @@ function update(timeStep) {
     }
 }
 
-function updatePlayer (player) {
-}
-
 function updateProjectile (projectile) {
 	projectile.vy += gravity;
 	projectile.vy = Math.min(maxVelocity, projectile.vy);
 	projectile.displayObject.x += projectile.vx;
 	projectile.displayObject.y += projectile.vy;
     
+	if (projectile.isDangerous) {
+		if (projectile.displayObject.y > ground.y && projectile.displayObject.x > ground.x && projectile.displayObject.x < ground.x + groundWidth) {
+			for (var i = 0 ; i < 5; i ++) {
+				spawnProjectile("", projectile.isGood, projectile.displayObject.x + Math.random() * 10 - 5, projectile.displayObject.y + Math.random() * 4 - 2, Math.random() * 6 - 3, Math.random() * 6 - 3);
+			}
+			projectile.destroyed = true;
+		}
+	}
+
 	// collide ground
 	if (projectile.displayObject.y > stageHeight + 20) {
 		projectile.destroyed = true;
