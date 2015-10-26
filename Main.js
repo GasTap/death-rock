@@ -1,8 +1,6 @@
-// TODO interludes
 
 var startTime = 6000;
 
-var interludes = [];
 var badMessages = [
 	'heart attack',
 	'stroke',
@@ -64,7 +62,7 @@ var TitleView = new Container();
 var projectiles = [];
 
 var groundElevation = 0;
-var elevationStep = 10;
+var elevationStep = 30;
 
 var tkr = new Object;
 
@@ -295,10 +293,6 @@ function drawHitbox(){
 
 function Main() {
     /* Link Canvas */
-    
-    interludes = [
-		Interlude1
-	];
 
     canvas = document.getElementById('DeathRockStage');
     stage = new Stage(canvas);
@@ -495,7 +489,7 @@ function update(timeStep) {
 				//groundWidth -= 5;
 				//groundWidth = Math.max(groundWidth, 200);
 			}
-			if (Math.random() > 0.9) {
+			if (Math.random() > 0.95) {
 				return switchToInterlude(interludes[Math.floor(Math.random() * interludes.length)]);
 			}
 		}
