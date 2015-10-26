@@ -108,6 +108,8 @@ var rockChair = (function () {
     var MAX_OVERLEAN = 21;
     var SPEED = 11;
     var FRICTION = 0.1;
+    
+    var RIGHT_COMPENSATION = MAX_OVERLEAN / 7;
 
 /*
     from ms paint lol
@@ -167,7 +169,7 @@ var rockChair = (function () {
                 }
             }
             if(keys[RIGHT_KEY]){
-                if(this.lean < MAX_ANGLE){
+                if(this.lean < MAX_ANGLE - RIGHT_COMPENSATION){
                     this.lean += LEAN;
                 } else if(this.lean < MAX_OVERLEAN){
                     this.lean += OVERLEAN;
