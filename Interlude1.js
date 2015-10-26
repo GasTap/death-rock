@@ -33,7 +33,7 @@ var Interlude1 = (function () {
             shape.x = this.i * 2 + 30;
             shape.y = 360 + Math.sin(this.i / 100) * 100;
 
-            if (this.i > 400) {
+            if (this.i > 300) {
                 this.remove();
             }
         }
@@ -82,7 +82,7 @@ var Interlude2 = (function () {
                 this.displayObjects[j].scaleX += 0.05;
             }
 
-            if (this.i > 400) {
+            if (this.i > 300) {
                 this.remove();
             }
         }
