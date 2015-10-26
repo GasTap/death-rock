@@ -68,13 +68,13 @@ var Interlude2 = (function () {
             this.displayObjects.push(text);
 
             var colour = '#'+Math.round(Math.random() * 0xFFFFFF).toString(16);
-            var posX = Math.random() * 500;
-            var posY = Math.random() * 500;
+            var posX = Math.random() * 720;
+            var posY = Math.random() * 720;
 
             var shape = new Shape();
             shape.graphics.beginFill(colour).drawCircle(0, 0, 1);
-            shape.x = posX + 100;
-            shape.y = posY + 100;
+            shape.x = posX + 0;
+            shape.y = posY + 0;
             stage.addChild(shape);
             this.displayObjects.push(shape);
 
