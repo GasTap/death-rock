@@ -1,8 +1,5 @@
-// TODO wall interactions
 // TODO interludes
-// TODO projectile names
 // TODO projectile effects
-// TODO outro
 
 var startTime = 6000;
 
@@ -21,7 +18,9 @@ var badMessages = [
 	'gang violence',
 	'overworking',
 	'improper of sleep',
-	'sedentarity'
+	'sedentarity',
+	'depression',
+	'loss of purpose'
 ];
 var goodMessages = [
 	'exercise',
@@ -31,7 +30,8 @@ var goodMessages = [
 	'a new hip',
 	'dialysis',
 	'a new kidney',
-	'hydrotherapy'
+	'hydrotherapy',
+	'hypnotherapy'
 ];
 
 var debuglog = false;
@@ -41,6 +41,8 @@ var stage; //Is the equivalent of stage in AS3 and we'll add "children" to it
 
 var stageWidth = 720;
 var stageHeight = 720;
+
+var groundWidth = 720;
 
 var mouse = {x:0,y:0};
 var keys = {};
@@ -239,18 +241,10 @@ function spawnProjectile (text, isGood, x, y, vx, vy) {
     var circle;
     var textShape;
     if (isGood) {
-        circle = new Shape();
-        circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 10);
-        projGraphics.addChild(circle);
-
-        textShape = new Text(text, 'bold 20px Arial', '#dddddd');
+        textShape = new Text(text, 'bold 20px Arial', "DeepSkyBlue");
         projGraphics.addChild(textShape);
     } else {
-        circle = new Shape();
-        circle.graphics.beginFill("DarkRed").drawCircle(0, 0, 10);
-        projGraphics.addChild(circle);
-
-        textShape = new Text(text, 'bold 20px Arial', '#333333');
+        textShape = new Text(text, 'bold 20px Arial', "DarkRed");
         projGraphics.addChild(textShape);
     }
 
@@ -468,15 +462,20 @@ function update(timeStep) {
 	// ground redraw graphics based on width and height and elevation
     ground.y += ((stageHeight - groundElevation) - ground.y) / 4;
 
-	if (groundElevation >= stageHeight) {
+    var targetGroundX = 0 + (stageWidth - groundWidth) / 2;
+    var targetGroundWidth = groundWidth / stageWidth;
+    ground.x += (targetGroundX - ground.x) / 4;
+    ground.scaleX += (targetGroundWidth - ground.scaleX) / 4;
+
+	if (groundElevation >= stageHeight - 100) {
+		groundWidth = stageWidth;
+		groundElevation = stageHeight;
+		player.y = ground.y;
     	createjs.Sound.stop("bgmusic");
     	projectiles.map(function (p) {p.destroyed = true;});
     	cleanProjectiles();
     	return;
     }
-
-    //console.log(player.x);
-	//spawnProjectile("adsf", Math.random() > 0.5, mouse.x, mouse.y, Math.random()*4 -2,Math.random()*4 -2)
 
 	// if we're in an interlude, update that instead
 	if (currentInterlude !== null) {
@@ -490,36 +489,25 @@ function update(timeStep) {
 			groundElevation += projectiles[i].isGood ? -elevationStep / 2 : elevationStep;
 			projectiles[i].destroyed = true;
 			cleanProjectiles();
+			if (Math.random() > 0.8) {
+				//groundWidth -= 5;
+				//groundWidth = Math.max(groundWidth, 200);
+			}
 			//return switchToInterlude(Interlude1);
 		}
 	}
 
 	rockChair.update();
-    
-    /*
-    // move player
-    if (keys.left) {
-        player.x -= playerMoveSpeed * (rockChair.getLeftLeanSpeed());
-    }
-    if (keys.right) {
-        player.x += playerMoveSpeed * (rockChair.getRightLeanSpeed());
-    if (keys[LEFT_KEY]) {
-    	player.x -= playerMoveSpeed * (rockChair.getLeftLeanSpeed());
-    }
-    if (keys[RIGHT_KEY]) {
-    	player.x += playerMoveSpeed * (rockChair.getRightLeanSpeed());
-    }
-    */
 
     groundElevation = Math.max(0, groundElevation);
 
     player.x += rockChair.velocity;
 
-    if (player.x > stageWidth) {
-    	player.x = stageWidth;
+    if (player.x > ground.x + groundWidth) {
+    	player.x = ground.x + groundWidth;
     	rockChair.velocity *= -0.4;
-    } else if (player.x < 0) {
-    	player.x = 0;
+    } else if (player.x < ground.x) {
+    	player.x = ground.x;
     	rockChair.velocity *= -0.4;
     }
     
@@ -558,20 +546,14 @@ function updateProjectile (projectile) {
 	projectile.vy = Math.min(maxVelocity, projectile.vy);
 	projectile.displayObject.x += projectile.vx;
 	projectile.displayObject.y += projectile.vy;
-
-	// TODO collide player
-   /* if (projectileColliding(projectile)){
-        projectile.destroyed = true;
-    }*/
     
-	// TODO collide ground
+	// collide ground
 	if (projectile.displayObject.y > stageHeight + 20) {
 		projectile.destroyed = true;
 	}
 }
 
 function switchToInterlude (InterludeClass) {
-	// TODO save scene and load interlude
 
 	// remove player and all projectiles
 	mainGameObjects = [player, ground].concat(projectiles.map(function(projectile){ return projectile.displayObject; }));
