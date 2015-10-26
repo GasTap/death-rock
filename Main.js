@@ -1,10 +1,38 @@
-// TODO elevation
+// TODO wall interactions
 // TODO interludes
-// TODO collisions
-// TODO refine player movement
-// TODO music
-// TODO sounds
-// TODO intro and outro
+// TODO projectile names
+// TODO projectile effects
+// TODO outro
+
+var startTime = 6000;
+
+var badMessages = [
+	'heart attack',
+	'stroke',
+	'diabetes',
+	'alzheimers',
+	'dementia',
+	'senility',
+	'falling over',
+	'cancer',
+	'too much sex',
+	'sodium',
+	'thrombosis',
+	'gang violence',
+	'overworking',
+	'improper of sleep',
+	'sedentarity'
+];
+var goodMessages = [
+	'exercise',
+	'heart medication',
+	'brain medication',
+	'blood pressure pills',
+	'a new hip',
+	'dialysis',
+	'a new kidney',
+	'hydrotherapy'
+];
 
 var debuglog = false;
 
@@ -287,6 +315,14 @@ function Main() {
                 {src:"ground.png", id:"ground"}
             ];
 
+
+    createjs.Sound.alternateExtensions = ["mp3"];
+
+    createjs.Sound.registerSound("music.mp3", "bgmusic");
+    createjs.Sound.addEventListener("fileload", function () {
+    	createjs.Sound.play("bgmusic", {loop:9999999999999});
+    });
+
     preloader = new PreloadJS();
     preloader.onFileLoad = handleFileLoad;
     preloader.loadManifest(manifest);
@@ -390,6 +426,8 @@ function startGame(e) {
     stage.onMouseMove = onMouseMove;
     window.document.onkeydown = onKeyDown;
     window.document.onkeyup = onKeyUp;
+
+    time = 0;
     
     Ticker.addListener(tkr, false);
     tkr.tick = update;
@@ -424,7 +462,19 @@ function reset()
 // Update Function
 function dist(a,b) { return Math.sqrt(Math.pow(a.x-b.x, 2) + Math.pow(a.y - b.y, 2));}
 
-function update() {
+var time = 0;
+function update(timeStep) {
+
+	// ground redraw graphics based on width and height and elevation
+    ground.y += ((stageHeight - groundElevation) - ground.y) / 4;
+
+	if (groundElevation >= stageHeight) {
+    	createjs.Sound.stop("bgmusic");
+    	projectiles.map(function (p) {p.destroyed = true;});
+    	cleanProjectiles();
+    	return;
+    }
+
     //console.log(player.x);
 	//spawnProjectile("adsf", Math.random() > 0.5, mouse.x, mouse.y, Math.random()*4 -2,Math.random()*4 -2)
 
@@ -437,7 +487,7 @@ function update() {
     // for every projectile handle and resolve collision
 	for (var i = 0; i < projectiles.length; i++) {
 		if (projectileColliding(projectiles[i])) {
-			groundElevation += elevationStep;
+			groundElevation += projectiles[i].isGood ? -elevationStep / 2 : elevationStep;
 			projectiles[i].destroyed = true;
 			cleanProjectiles();
 			//return switchToInterlude(Interlude1);
@@ -460,18 +510,26 @@ function update() {
     	player.x += playerMoveSpeed * (rockChair.getRightLeanSpeed());
     }
     */
+
+    groundElevation = Math.max(0, groundElevation);
+
     player.x += rockChair.velocity;
+
+    if (player.x > stageWidth) {
+    	player.x = stageWidth;
+    	rockChair.velocity *= -0.4;
+    } else if (player.x < 0) {
+    	player.x = 0;
+    	rockChair.velocity *= -0.4;
+    }
     
     // constrain player to ground
-    player.y = stageHeight - groundElevation + rockChair.getHeightLeanFactor() * -10;
+    player.y = ground.y + rockChair.getHeightLeanFactor() * -10;
     
     // rotate player
     player.rotation = rockChair.lean;
     
     updatePlayer(player);
-    
-    // TODO ground redraw graphics based on width and height and elevation
-    ground.y = stageHeight - groundElevation;
 
     // update projectiles
     projectiles.map(updateProjectile);
@@ -479,8 +537,16 @@ function update() {
     // clean projectiles
     cleanProjectiles();
 
-    if (Math.random() < 0.05) {
-    	spawnProjectile("asdf", Math.random() > 0.8, Math.random() * stageWidth, -10, Math.random() * 4 - 2, Math.random() * 2);
+    time += timeStep;
+    if (time > startTime && Math.random() < 0.05) {
+    	var message;
+    	var isGood = Math.random() > 0.8;
+    	if (isGood) {
+    		message = goodMessages[Math.floor(Math.random() * goodMessages.length)];
+    	} else {
+    		message = badMessages[Math.floor(Math.random() * badMessages.length)];
+    	}
+    	spawnProjectile(message, isGood, Math.random() * stageWidth, -10, Math.random() * 4 - 2, Math.random() * 2);
     }
 }
 
